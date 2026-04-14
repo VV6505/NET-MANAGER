@@ -36,10 +36,10 @@ public class ClientPaidInvoicesExportServlet extends BaseServlet {
 
         StringBuilder sb = new StringBuilder();
         sb.append('\uFEFF');
-        sb.append("MaHoaDon,Ngay,TrangThai,TongTienDoAn,TongTienGame,TongTien\n");
+        sb.append("MaHoaDon,Ngay,TrangThai,TienMay,TongTienDoAn,TongTien\n");
 
         StringBuilder sql = new StringBuilder(
-                "SELECT maHoaDon, ngay, trangThai, tongTienDoAn, tongTienGame, tongTien " +
+                "SELECT maHoaDon, ngay, trangThai, COALESCE(tienMay, 0) AS tienMay, tongTienDoAn, tongTien " +
                 "FROM HoaDon WHERE maKhachHang = ? AND trangThai = N'Đã thanh toán'"
         );
         if (from != null) sql.append(" AND ngay >= ?");
@@ -58,8 +58,8 @@ public class ClientPaidInvoicesExportServlet extends BaseServlet {
                     sb.append(csv(rs.getString("maHoaDon"))).append(',')
                       .append(csv(rs.getDate("ngay") != null ? rs.getDate("ngay").toString() : "")).append(',')
                       .append(csv(rs.getString("trangThai"))).append(',')
+                      .append(rs.getDouble("tienMay")).append(',')
                       .append(rs.getDouble("tongTienDoAn")).append(',')
-                      .append(rs.getDouble("tongTienGame")).append(',')
                       .append(rs.getDouble("tongTien"))
                       .append('\n');
                 }

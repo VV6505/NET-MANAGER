@@ -11,7 +11,6 @@ public class UsageHistory {
     private Date thoiGianRa;
     private String maHoaDon;
     private double tongTienDoAn;
-    private double tongTienGame;
     private double tongTien;
     private String trangThai;
 
@@ -77,14 +76,6 @@ public class UsageHistory {
 
     public void setTongTienDoAn(double tongTienDoAn) {
         this.tongTienDoAn = tongTienDoAn;
-    }
-
-    public double getTongTienGame() {
-        return tongTienGame;
-    }
-
-    public void setTongTienGame(double tongTienGame) {
-        this.tongTienGame = tongTienGame;
     }
 
     public double getTongTien() {

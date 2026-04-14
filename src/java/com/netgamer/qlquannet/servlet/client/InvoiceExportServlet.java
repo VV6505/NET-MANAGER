@@ -101,16 +101,9 @@ public class InvoiceExportServlet extends BaseServlet {
             for (InvoiceLineItem it : d.foods) sb.append(row(it, df));
             sb.append("</tbody></table>");
         }
-        if (d.games != null && !d.games.isEmpty()) {
-            sb.append("<div class='sec'>Dịch vụ • Game</div>");
-            sb.append(tableHead());
-            for (InvoiceLineItem it : d.games) sb.append(row(it, df));
-            sb.append("</tbody></table>");
-        }
-
         sb.append("<div class='totals'>")
+          .append(totalRow("Tiền thuê máy", df.format(d.tienMay) + " đ"))
           .append(totalRow("Tổng đồ ăn", df.format(d.tongTienDoAn) + " đ"))
-          .append(totalRow("Tổng game", df.format(d.tongTienGame) + " đ"))
           .append("<div class='row'><div class='k'>TỔNG CỘNG</div><div class='right'><b>")
           .append(df.format(d.tongTien)).append(" đ</b></div></div>")
           .append("</div>");

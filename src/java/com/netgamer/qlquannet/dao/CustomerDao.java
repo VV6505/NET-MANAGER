@@ -2,6 +2,7 @@ package com.netgamer.qlquannet.dao;
 
 import com.netgamer.qlquannet.db.Db;
 import com.netgamer.qlquannet.model.Customer;
+import java.text.Normalizer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +12,10 @@ import java.util.List;
 import javax.servlet.ServletContext;
 
 public class CustomerDao {
+    public static final String STATUS_PENDING = "Chờ xác nhận";
+    public static final String STATUS_ACTIVE = "Đang hoạt động";
+    public static final String STATUS_LOCKED = "Đã khóa";
+
     private final ServletContext ctx;
 
     public CustomerDao(ServletContext ctx) {
@@ -31,10 +36,10 @@ public class CustomerDao {
 
     public Customer findBySdtAndPassword(String sdt, String password) throws Exception {
         String sql =
-                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang " +
+                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang, kh.trangThaiTaiKhoan " +
                 "FROM KhachHang kh " +
                 "LEFT JOIN LoaiKhachHang lkh ON kh.maLoaiKhachHang = lkh.maLoaiKhachHang " +
-                "WHERE kh.sdt = ? AND kh.matKhau = ?";
+                "WHERE kh.sdt = ? AND kh.matKhau = ? AND kh.trangThaiTaiKhoan = N'" + STATUS_ACTIVE + "'";
         try (Connection con = Db.getConnection(ctx);
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, sdt);
@@ -48,7 +53,7 @@ public class CustomerDao {
 
     public Customer findBySdt(String sdt) throws Exception {
         String sql =
-                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang " +
+                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang, kh.trangThaiTaiKhoan " +
                 "FROM KhachHang kh " +
                 "LEFT JOIN LoaiKhachHang lkh ON kh.maLoaiKhachHang = lkh.maLoaiKhachHang " +
                 "WHERE kh.sdt = ?";
@@ -64,7 +69,7 @@ public class CustomerDao {
 
     public List<Customer> findAll() throws Exception {
         String sql =
-                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang " +
+                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang, kh.trangThaiTaiKhoan " +
                 "FROM KhachHang kh " +
                 "LEFT JOIN LoaiKhachHang lkh ON kh.maLoaiKhachHang = lkh.maLoaiKhachHang " +
                 "ORDER BY kh.maKhachHang";
@@ -79,11 +84,29 @@ public class CustomerDao {
         }
     }
 
-    public Customer createCustomer(String tenKhachHang, String sdt, String email, String password) throws Exception {
+    public List<Customer> findActiveForRental() throws Exception {
+        String sql =
+                "SELECT kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email, kh.soGioChoi, kh.soDu, kh.maLoaiKhachHang, lkh.tenLoaiKhachHang, kh.trangThaiTaiKhoan " +
+                "FROM KhachHang kh " +
+                "LEFT JOIN LoaiKhachHang lkh ON kh.maLoaiKhachHang = lkh.maLoaiKhachHang " +
+                "WHERE kh.trangThaiTaiKhoan = N'" + STATUS_ACTIVE + "' " +
+                "ORDER BY kh.tenKhachHang";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            List<Customer> out = new ArrayList<>();
+            while (rs.next()) {
+                out.add(map(rs));
+            }
+            return out;
+        }
+    }
+
+    public Customer createCustomer(String tenKhachHang, String sdt, String email, String password, String status) throws Exception {
         String newId = generateNewCustomerId();
         String sql =
-                "INSERT INTO KhachHang (maKhachHang, tenKhachHang, sdt, email, matKhau, soGioChoi, soDu, maLoaiKhachHang) " +
-                "VALUES (?, ?, ?, ?, ?, 0, 0, 'LK0001')";
+                "INSERT INTO KhachHang (maKhachHang, tenKhachHang, sdt, email, matKhau, soGioChoi, soDu, maLoaiKhachHang, trangThaiTaiKhoan) " +
+                "VALUES (?, ?, ?, ?, ?, 0, 0, 'LK0001', ?)";
         try (Connection con = Db.getConnection(ctx);
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, newId);
@@ -91,9 +114,65 @@ public class CustomerDao {
             ps.setString(3, sdt);
             ps.setString(4, email);
             ps.setString(5, password);
+            ps.setString(6, status);
             ps.executeUpdate();
         }
         return findBySdt(sdt);
+    }
+
+    public Customer createByAdmin(String tenKhachHang, String sdt, String email) throws Exception {
+        return createCustomer(tenKhachHang, sdt, email, normalizeDefaultPassword(tenKhachHang), STATUS_ACTIVE);
+    }
+
+    public String submitRegistrationRequest(String tenKhachHang, String sdt, String email) throws Exception {
+        Customer existing = findBySdt(sdt);
+        if (existing == null) {
+            createCustomer(tenKhachHang, sdt, email, null, STATUS_PENDING);
+            return "CREATED";
+        }
+        String status = existing.getTrangThaiTaiKhoan();
+        if (STATUS_PENDING.equals(status)) return "PENDING_EXISTS";
+        if (STATUS_ACTIVE.equals(status)) return "ACTIVE_EXISTS";
+        if (STATUS_LOCKED.equals(status)) {
+            String sql = "UPDATE KhachHang SET tenKhachHang = ?, email = ?, matKhau = NULL, trangThaiTaiKhoan = ? WHERE sdt = ?";
+            try (Connection con = Db.getConnection(ctx);
+                 PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, tenKhachHang);
+                ps.setString(2, email);
+                ps.setString(3, STATUS_PENDING);
+                ps.setString(4, sdt);
+                ps.executeUpdate();
+            }
+            return "REOPENED";
+        }
+        return "ACTIVE_EXISTS";
+    }
+
+    public boolean approveCustomerBySdt(String sdt) throws Exception {
+        String tenKhachHang = null;
+        String sqlGet = "SELECT tenKhachHang FROM KhachHang WHERE sdt = ? AND trangThaiTaiKhoan = ?";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sqlGet)) {
+            ps.setString(1, sdt);
+            ps.setString(2, STATUS_PENDING);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    tenKhachHang = rs.getString(1);
+                }
+            }
+        }
+        if (tenKhachHang == null) {
+            return false;
+        }
+        String sqlUpdate = "UPDATE KhachHang SET matKhau = ?, trangThaiTaiKhoan = ? WHERE sdt = ? AND trangThaiTaiKhoan = ?";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sqlUpdate)) {
+            ps.setString(1, normalizeDefaultPassword(tenKhachHang));
+            ps.setString(2, STATUS_ACTIVE);
+            ps.setString(3, sdt);
+            ps.setString(4, STATUS_PENDING);
+            return ps.executeUpdate() > 0;
+        }
     }
 
     public void updateBySdt(String sdt, String tenKhachHang, String email, String matKhauMoiOrNull) throws Exception {
@@ -153,7 +232,15 @@ public class CustomerDao {
         c.setSoDu(rs.getDouble("soDu"));
         c.setMaLoaiKhachHang(rs.getString("maLoaiKhachHang"));
         c.setTenLoaiKhachHang(rs.getString("tenLoaiKhachHang"));
+        c.setTrangThaiTaiKhoan(rs.getString("trangThaiTaiKhoan"));
         return c;
+    }
+
+    private String normalizeDefaultPassword(String name) {
+        if (name == null) return "";
+        String noAccent = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return noAccent.toLowerCase().replaceAll("\\s+", "");
     }
 }
 

@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=20260413a">
     <style>
         .rev-page{
             background:linear-gradient(180deg,#f8fbff 0%,#eef5fb 100%);
@@ -81,15 +81,16 @@
                         <h2 class="mb-1" style="font-weight:800;letter-spacing:.03em;">
                             <i class="fa-solid fa-chart-line text-info me-2"></i>Báo cáo doanh thu
                         </h2>
-                        <div class="text-secondary small">Gồm hóa đơn <strong>Đã thanh toán</strong> và <strong>Đã đặt</strong>, giao diện sáng để dễ đọc hơn.</div>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         <c:url var="urlExcel" value="/staff/revenue/export/excel">
+                            <c:param name="month" value="${month}"/>
                             <c:param name="from" value="${from}"/>
                             <c:param name="to" value="${to}"/>
                             <c:param name="customerName" value="${customerName}"/>
                         </c:url>
                         <c:url var="urlPdf" value="/staff/revenue/export/pdf">
+                            <c:param name="month" value="${month}"/>
                             <c:param name="from" value="${from}"/>
                             <c:param name="to" value="${to}"/>
                             <c:param name="customerName" value="${customerName}"/>
@@ -106,6 +107,10 @@
 
             <div class="filter-card p-3 p-md-4 mb-4">
                 <form class="row g-3 align-items-end" method="get" action="${pageContext.request.contextPath}/staff/revenue">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small text-secondary mb-1">Theo tháng</label>
+                        <input type="month" class="form-control form-control-lg" name="month" value="${month}"/>
+                    </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label small text-secondary mb-1">Từ ngày</label>
                         <input type="date" class="form-control form-control-lg" name="from" value="${from}"/>
@@ -141,17 +146,6 @@
                                 <div class="val mt-1" style="color:#16324f;"><fmt:formatNumber value="${tongDoanhThu}" type="number"/> đ</div>
                             </div>
                             <div class="icon bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-sack-dollar"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-3">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="small text-secondary text-uppercase">Tiền game</div>
-                                <div class="val mt-1" style="color:#0d6efd;"><fmt:formatNumber value="${tongTienGame}" type="number"/> đ</div>
-                            </div>
-                            <div class="icon" style="background:rgba(13,110,253,.12);color:#0d6efd;"><i class="fa-solid fa-gamepad"></i></div>
                         </div>
                     </div>
                 </div>
@@ -205,7 +199,6 @@
                         <tr>
                             <th>Mã hóa đơn</th>
                             <th>Ngày</th>
-                            <th class="text-end">Tiền game</th>
                             <th class="text-end">Tiền đồ ăn</th>
                             <th class="text-end">Tiền giờ</th>
                             <th class="text-end">Tổng tiền</th>
@@ -216,14 +209,13 @@
                             <tr>
                                 <td><b class="text-primary"><c:out value="${hd.maHoaDon}"/></b></td>
                                 <td><c:out value="${hd.ngay}"/></td>
-                                <td class="text-end"><fmt:formatNumber value="${hd.tongTienGame}" type="number"/></td>
                                 <td class="text-end"><fmt:formatNumber value="${hd.tongTienDoAn}" type="number"/></td>
                                 <td class="text-end"><fmt:formatNumber value="${hd.tienGioChoi}" type="number"/></td>
                                 <td class="text-end fw-semibold"><fmt:formatNumber value="${hd.tongCong}" type="number"/> đ</td>
                             </tr>
                         </c:forEach>
                         <c:if test="${empty listHoaDon}">
-                            <tr><td colspan="6" class="text-center py-4 text-secondary">Chưa có dữ liệu trong khoảng đã chọn.</td></tr>
+                            <tr><td colspan="5" class="text-center py-4 text-secondary">Chưa có dữ liệu trong khoảng đã chọn.</td></tr>
                         </c:if>
                         </tbody>
                     </table>

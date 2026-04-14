@@ -18,7 +18,7 @@ public class RevenueDao {
      * Khách đặt qua web thường là {@code Đã đặt}; thanh toán tại quầy là {@code Đã thanh toán}.
      */
     static final String SQL_DOANH_THU_TRANG_THAI =
-            "h.trangThai IN (N'Đã thanh toán', N'Đã đặt')";
+            "h.trangThai IN (N'Đã thanh toán')";
 
     /**
      * Ngày dùng cho báo cáo/lọc: ưu tiên {@code ngay}, fallback {@code ngayDat} (nhiều HD khách chỉ có ngayDat).
@@ -32,11 +32,9 @@ public class RevenueDao {
     public RevenueResult getPaidInvoices(LocalDate from, LocalDate to, String customerName) throws Exception {
         StringBuilder sql = new StringBuilder(
                 "SELECT h.maHoaDon, " + SQL_NGAY_HIEU_LUC + " AS ngayHieuLuc, h.trangThai, h.maKhachHang, kh.tenKhachHang, h.soGioChoi, "
-                        + "h.tongTien, h.tongTienDoAn, h.tongTienGame, COALESCE(mt.giaGio, 0) AS giaGioMay "
+                        + "h.tongTien, h.tongTienDoAn, COALESCE(h.tienMay, 0) AS tienMay "
                         + "FROM HoaDon h "
                         + "LEFT JOIN KhachHang kh ON h.maKhachHang = kh.maKhachHang "
-                        + "LEFT JOIN LichSuSuDung ls ON h.maSuDung = ls.maSuDung "
-                        + "LEFT JOIN MayTinh mt ON ls.maMay = mt.maMay "
                         + "WHERE " + SQL_DOANH_THU_TRANG_THAI
         );
         List<Object> params = new ArrayList<>();
@@ -56,7 +54,6 @@ public class RevenueDao {
 
         double sumTongTien = 0;
         double sumFood = 0;
-        double sumGame = 0;
         double sumPlay = 0;
         double sumGrand = 0;
         List<InvoiceSummary> out = new ArrayList<>();
@@ -76,24 +73,20 @@ public class RevenueDao {
                     dto.setSoGioChoi(soGio);
                     double tong = rs.getDouble("tongTien");
                     double food = rs.getDouble("tongTienDoAn");
-                    double game = rs.getDouble("tongTienGame");
-                    double giaGio = rs.getDouble("giaGioMay");
-                    double tienGio = soGio * giaGio;
+                    double tienGio = rs.getDouble("tienMay");
                     dto.setTongTien(tong);
                     dto.setTongTienDoAn(food);
-                    dto.setTongTienGame(game);
                     dto.setTienGioChoi(tienGio);
                     out.add(dto);
 
                     sumTongTien += tong;
                     sumFood += food;
-                    sumGame += game;
                     sumPlay += tienGio;
-                    sumGrand += tong + tienGio;
+                    sumGrand += tong;
                 }
             }
         }
-        return new RevenueResult(out, sumGrand, sumFood, sumGame, sumPlay, sumTongTien);
+        return new RevenueResult(out, sumGrand, sumFood, sumPlay, sumTongTien);
     }
 
     public List<RevenueBucket> groupPaidRevenue(String groupBy, LocalDate from, LocalDate to) throws Exception {
@@ -166,17 +159,15 @@ public class RevenueDao {
         /** Tổng doanh thu (tổng tiền hóa đơn + tiền giờ chơi ước lượng). */
         public final double total;
         public final double totalFood;
-        public final double totalGame;
         public final double totalPlayMoney;
-        /** Chỉ tổng cột tongTien trên DB (đồ ăn + game). */
+        /** Chỉ tổng cột tongTien trên DB (đồ ăn + tiền máy). */
         public final double totalInvoiceMoney;
 
-        public RevenueResult(List<InvoiceSummary> invoices, double total, double totalFood, double totalGame,
+        public RevenueResult(List<InvoiceSummary> invoices, double total, double totalFood,
                 double totalPlayMoney, double totalInvoiceMoney) {
             this.invoices = invoices;
             this.total = total;
             this.totalFood = totalFood;
-            this.totalGame = totalGame;
             this.totalPlayMoney = totalPlayMoney;
             this.totalInvoiceMoney = totalInvoiceMoney;
         }

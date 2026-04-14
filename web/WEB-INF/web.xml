@@ -201,6 +201,14 @@
         <servlet-name>StaffInvoicesServlet</servlet-name>
         <url-pattern>/staff/invoices</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>StaffInvoiceExportServlet</servlet-name>
+        <servlet-class>com.netgamer.qlquannet.servlet.staff.StaffInvoiceExportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StaffInvoiceExportServlet</servlet-name>
+        <url-pattern>/staff/invoices/export</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>StaffEmployeesServlet</servlet-name>
@@ -226,11 +234,11 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>ExportExcelServlet</servlet-name>
-        <servlet-class>com.netgamer.qlquannet.servlet.staff.ExportExcelServlet</servlet-class>
+        <servlet-name>RevenueExcelPlaceholderServlet</servlet-name>
+        <servlet-class>com.netgamer.qlquannet.servlet.staff.RevenueExcelPlaceholderServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExportExcelServlet</servlet-name>
+        <servlet-name>RevenueExcelPlaceholderServlet</servlet-name>
         <url-pattern>/staff/revenue/export/excel</url-pattern>
     </servlet-mapping>
 

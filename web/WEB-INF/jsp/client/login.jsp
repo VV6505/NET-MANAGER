@@ -32,6 +32,9 @@
           <p class="form-error"><%= request.getAttribute("error") %></p>
         <% } %>
         <form class="login-form" action="${pageContext.request.contextPath}/login" method="post">
+          <div class="auth-hint">
+            Đăng nhập bằng SĐT và mật khẩu mặc định: tên khách hàng đã chuẩn hóa (không dấu, không khoảng trắng, chữ thường), sau khi tài khoản đã được admin xác nhận.
+          </div>
           <input type="hidden" name="from" value="<%= request.getParameter("from") != null ? request.getParameter("from") : "" %>">
           <div class="form-group">
             <div class="label-container">

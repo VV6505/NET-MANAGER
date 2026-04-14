@@ -31,7 +31,6 @@ public class CartServlet extends BaseServlet {
             req.setAttribute("cartItems", st.items);
             req.setAttribute("total", st.tongTien);
             req.setAttribute("totalFood", st.tongTienDoAn);
-            req.setAttribute("totalGame", st.tongTienGame);
             session.setAttribute("cartCount", dao.countItems(customer.getMaKhachHang()));
         } catch (Exception e) {
             req.setAttribute("cartItems", java.util.Collections.emptyList());
@@ -62,17 +61,17 @@ public class CartServlet extends BaseServlet {
 
             switch (pathInfo) {
                 case "/add": {
-                    String id = req.getParameter("id"); // maDoAn | maGame
-                    String type = normalizeType(req.getParameter("type"));
+                    String id = req.getParameter("id");
                     String redirect = req.getParameter("redirect"); // home | cart (default)
                     if (id != null && !id.trim().isEmpty()) {
                         CartState st = dao.getTempCart(maKhachHang);
-                        int current = findQty(st.items, id.trim(), type);
-                        String result = dao.setItemQuantity(maKhachHang, id.trim(), type, current + 1);
+                        int current = findQty(st.items, id.trim());
+                        String result = dao.setItemQuantity(maKhachHang, id.trim(), current + 1);
                         if (result != null && result.startsWith("Error")) {
                             session.setAttribute("errorMessage", result);
                         } else {
                             session.setAttribute("message", "Đã thêm vào giỏ hàng.");
+                            session.setAttribute("orderConfirmed", Boolean.FALSE);
                         }
                     }
                     if ("home".equalsIgnoreCase(redirect)) {
@@ -83,18 +82,19 @@ public class CartServlet extends BaseServlet {
                 }
                 case "/update": {
                     String id = req.getParameter("itemId");
-                    String type = normalizeType(req.getParameter("itemType"));
                     String action = req.getParameter("action");
                     if (id != null && action != null) {
                         CartState st = dao.getTempCart(maKhachHang);
-                        int current = findQty(st.items, id.trim(), type);
+                        int current = findQty(st.items, id.trim());
                         int next = current;
                         if ("increase".equals(action)) next = current + 1;
                         if ("decrease".equals(action)) next = Math.max(1, current - 1);
                         if ("remove".equals(action)) next = 0;
-                        String result = dao.setItemQuantity(maKhachHang, id.trim(), type, next);
+                        String result = dao.setItemQuantity(maKhachHang, id.trim(), next);
                         if (result != null && result.startsWith("Error")) {
                             session.setAttribute("errorMessage", result);
+                        } else {
+                            session.setAttribute("orderConfirmed", Boolean.FALSE);
                         }
                     }
                     break;
@@ -105,25 +105,15 @@ public class CartServlet extends BaseServlet {
                         session.setAttribute("errorMessage", result);
                     } else {
                         session.setAttribute("message", "Đã xóa giỏ hàng.");
+                        session.setAttribute("orderConfirmed", Boolean.FALSE);
                     }
                     break;
                 }
                 case "/checkout": {
                     CartState st = dao.getTempCart(maKhachHang);
-                    if (st.maHoaDon == null) {
-                        session.setAttribute("errorMessage", "Giỏ hàng trống.");
-                        break;
-                    }
-                    String result = dao.checkoutFromWeb(maKhachHang, st.maHoaDon);
-                    if (result != null && result.startsWith("Error")) {
-                        session.setAttribute("errorMessage", result);
-                    } else if (result != null && !"Success".equalsIgnoreCase(result.trim())) {
-                        // SP đôi khi trả ERROR_MESSAGE() thuần
-                        session.setAttribute("errorMessage", result);
-                    } else {
-                        session.setAttribute("message", "Đặt món thành công.");
-                        session.setAttribute("lastInvoiceId", st.maHoaDon);
-                    }
+                    session.setAttribute("message", "Đã xác nhận món ăn trong phiên thuê hiện tại.");
+                    session.setAttribute("orderNotice", "Bạn đã đặt món thành công. Tạm tính dịch vụ đồ ăn: " + String.format("%,.0f", st.tongTienDoAn) + "đ");
+                    session.setAttribute("orderConfirmed", Boolean.TRUE);
                     break;
                 }
                 default:
@@ -140,22 +130,11 @@ public class CartServlet extends BaseServlet {
     }
 
     private int findQty(List<CartDbItem> items, String id) {
-        return findQty(items, id, "food");
-    }
-
-    private int findQty(List<CartDbItem> items, String id, String type) {
         if (items == null) return 0;
         for (CartDbItem it : items) {
-            if (id.equals(it.getId()) && type.equals(normalizeType(it.getType()))) return it.getQuantity();
+            if (id.equals(it.getId())) return it.getQuantity();
         }
         return 0;
-    }
-
-    private String normalizeType(String type) {
-        if (type == null) return "food";
-        String t = type.trim().toLowerCase();
-        if ("game".equals(t)) return "game";
-        return "food";
     }
 }
 

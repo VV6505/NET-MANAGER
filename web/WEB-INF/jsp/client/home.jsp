@@ -103,21 +103,7 @@
                     <p class="game-description">${game.moTa != null ? game.moTa : 'Game hấp dẫn'}</p>
 
                     <div class="game-actions">
-                        <c:choose>
-                            <c:when test="${not empty sessionScope.username}">
-                                <form action="${pageContext.request.contextPath}/cart/add" method="POST" class="game-add-form">
-                                    <input type="hidden" name="type" value="game">
-                                    <input type="hidden" name="id" value="${game.maGame}">
-                                    <input type="hidden" name="redirect" value="home">
-                                    <button type="submit" class="play-btn">Thêm game vào giỏ</button>
-                                </form>
-                            </c:when>
-                            <c:otherwise>
-                                <button type="button" class="play-btn" onclick="showLoginMessage();">
-                                    Thêm game vào giỏ
-                                </button>
-                            </c:otherwise>
-                        </c:choose>
+                        <button type="button" class="play-btn" disabled>Chơi ngay</button>
                     </div>
                 </div>
             </div>
@@ -145,7 +131,6 @@
                             <p>Thể loại: ${food.loaiDoAn}</p>
                             <p class="price">${food.giaDoAn}đ</p>
                             <form action="${pageContext.request.contextPath}/cart/add" method="POST">
-                                <input type="hidden" name="type" value="food">
                                 <input type="hidden" name="id" value="${food.maDoAn}">
                                 <input type="hidden" name="redirect" value="home">
                                 <button type="submit" class="play-btn">Thêm vào giỏ</button>

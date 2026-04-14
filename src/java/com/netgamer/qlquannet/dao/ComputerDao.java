@@ -57,5 +57,38 @@ public class ComputerDao {
             ps.executeUpdate();
         }
     }
+
+    public String startRental(String maMay, String maKhachHang, String maNhanVien) throws Exception {
+        String sql = "EXEC sp_BatDauThueMay ?, ?, ?";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, maMay);
+            ps.setString(2, maKhachHang);
+            ps.setString(3, maNhanVien);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String result = rs.getString("Result");
+                    return result != null ? result : "Success";
+                }
+            }
+        }
+        return "Error: No result";
+    }
+
+    public String endRental(String maMay, String maNhanVien) throws Exception {
+        String sql = "EXEC sp_KetThucThueMay ?, ?";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, maMay);
+            ps.setString(2, maNhanVien);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String result = rs.getString("Result");
+                    return result != null ? result : "Success";
+                }
+            }
+        }
+        return "Error: No result";
+    }
 }
 

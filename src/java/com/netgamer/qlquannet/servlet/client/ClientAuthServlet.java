@@ -51,7 +51,7 @@ public class ClientAuthServlet extends BaseServlet {
                 CustomerDao dao = new CustomerDao(getServletContext());
                 Customer customer = dao.findBySdtAndPassword(sdt.trim(), password);
                 if (customer == null) {
-                    req.setAttribute("error", "SĐT hoặc mật khẩu không đúng.");
+                    req.setAttribute("error", "SĐT hoặc mật khẩu không đúng, hoặc tài khoản chưa được admin xác nhận.");
                     forward(req, resp, "/WEB-INF/jsp/client/login.jsp");
                     return;
                 }
@@ -81,28 +81,27 @@ public class ClientAuthServlet extends BaseServlet {
         if ("/register".equals(path)) {
             String tenKhachHang = req.getParameter("customerName");
             String sdt = req.getParameter("username");
-            String password = req.getParameter("password");
             String email = req.getParameter("email");
-            if (tenKhachHang == null || sdt == null || password == null || tenKhachHang.trim().isEmpty() || sdt.trim().isEmpty()) {
+            if (tenKhachHang == null || sdt == null || tenKhachHang.trim().isEmpty() || sdt.trim().isEmpty()) {
                 req.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
                 forward(req, resp, "/WEB-INF/jsp/client/register.jsp");
                 return;
             }
             try {
                 CustomerDao dao = new CustomerDao(getServletContext());
-                if (dao.existsBySdt(sdt.trim())) {
-                    req.setAttribute("error", "Số điện thoại đã được đăng ký.");
+                String result = dao.submitRegistrationRequest(tenKhachHang.trim(), sdt.trim(), email != null ? email.trim() : "");
+                if ("PENDING_EXISTS".equals(result)) {
+                    req.setAttribute("error", "Yêu cầu đăng ký của SĐT này đang chờ admin xác nhận.");
                     forward(req, resp, "/WEB-INF/jsp/client/register.jsp");
                     return;
                 }
-                Customer created = dao.createCustomer(tenKhachHang.trim(), sdt.trim(), email != null ? email.trim() : "", password);
-                if (created == null) {
-                    req.setAttribute("error", "Không thể tạo tài khoản.");
+                if ("ACTIVE_EXISTS".equals(result)) {
+                    req.setAttribute("error", "SĐT này đã có tài khoản hoạt động, vui lòng đăng nhập.");
                     forward(req, resp, "/WEB-INF/jsp/client/register.jsp");
                     return;
                 }
                 HttpSession session = req.getSession(true);
-                session.setAttribute("message", "Đăng ký thành công. Vui lòng đăng nhập.");
+                session.setAttribute("message", "Đăng ký thành công. Vui lòng đợi admin xác nhận để đăng nhập.");
                 resp.sendRedirect(req.getContextPath() + "/login");
                 return;
             } catch (Exception e) {

@@ -14,10 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- * Servlet tải dữ liệu trang báo cáo doanh thu (dashboard + bảng + dữ liệu cho biểu đồ).
- * Thuộc tính JSP theo yêu cầu đồ án: {@code listHoaDon}, {@code tongDoanhThu}, …
- */
 public class ThongKeServlet extends BaseServlet {
 
     @Override
@@ -27,16 +23,30 @@ public class ThongKeServlet extends BaseServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/login");
             return;
         }
+        if (!canViewRevenue(session)) {
+            session.setAttribute("errorMessage", "Bạn không có quyền xem doanh thu.");
+            resp.sendRedirect(req.getContextPath() + "/staff");
+            return;
+        }
 
         LocalDate from = parseDate(req.getParameter("from"));
         LocalDate to = parseDate(req.getParameter("to"));
+        String month = req.getParameter("month");
+        if (month != null && month.matches("\\d{4}-\\d{2}")) {
+            try {
+                java.time.YearMonth ym = java.time.YearMonth.parse(month);
+                from = ym.atDay(1);
+                to = ym.atEndOfMonth();
+            } catch (Exception ignored) {
+            }
+        }
         String customerName = req.getParameter("customerName");
 
         try {
             RevenueDao dao = new RevenueDao(getServletContext());
             RevenueDao.RevenueResult rr = dao.getPaidInvoices(from, to, customerName);
 
-            // Gom doanh thu theo ngày (tổng từng hóa đơn = tongTien + tiền giờ ước lượng)
+            // Gom doanh thu theo ngày (tổng từng hóa đơn đã gồm tiền máy + đồ ăn)
             Map<LocalDate, Double> byDay = new LinkedHashMap<>();
             for (InvoiceSummary inv : rr.invoices) {
                 if (inv.getNgay() == null) {
@@ -56,12 +66,12 @@ public class ThongKeServlet extends BaseServlet {
             req.setAttribute("paidCustomerNames", dao.listPaidCustomerNames());
             req.setAttribute("from", req.getParameter("from"));
             req.setAttribute("to", req.getParameter("to"));
+            req.setAttribute("month", month != null ? month : "");
             req.setAttribute("customerName", customerName);
 
             // Tên biến theo đề bài
             req.setAttribute("listHoaDon", rr.invoices);
             req.setAttribute("tongDoanhThu", rr.total);
-            req.setAttribute("tongTienGame", rr.totalGame);
             req.setAttribute("tongTienDoAn", rr.totalFood);
             req.setAttribute("tongTienGioChoi", rr.totalPlayMoney);
 
@@ -69,7 +79,6 @@ public class ThongKeServlet extends BaseServlet {
             req.setAttribute("invoices", rr.invoices);
             req.setAttribute("total", rr.total);
             req.setAttribute("totalFood", rr.totalFood);
-            req.setAttribute("totalGame", rr.totalGame);
             req.setAttribute("totalPlayMoney", rr.totalPlayMoney);
 
             req.setAttribute("chartLabels", chartLabels);
@@ -84,7 +93,6 @@ public class ThongKeServlet extends BaseServlet {
             req.setAttribute("chartLabels", java.util.Collections.emptyList());
             req.setAttribute("chartData", java.util.Collections.emptyList());
             req.setAttribute("tongDoanhThu", 0d);
-            req.setAttribute("tongTienGame", 0d);
             req.setAttribute("tongTienDoAn", 0d);
             req.setAttribute("tongTienGioChoi", 0d);
             forward(req, resp, "/WEB-INF/jsp/staff/revenue.jsp");
@@ -100,5 +108,12 @@ public class ThongKeServlet extends BaseServlet {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private boolean canViewRevenue(HttpSession session) {
+        String role = (String) session.getAttribute("staffRole");
+        if (role == null) return false;
+        String r = role.toLowerCase();
+        return r.contains("quản lý") || r.contains("thu ngân");
     }
 }

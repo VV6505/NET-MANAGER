@@ -114,6 +114,44 @@ public class StaffDao {
         }
     }
 
+    public Employee findEmployeeById(String maNhanVien) throws Exception {
+        String sql =
+                "SELECT nv.maNhanVien, nv.tenNhanVien, nv.ngaySinh, nv.gioiTinh, nv.cmnd, nv.ngayCap, nv.noiCap, " +
+                "       nv.sdt, nv.email, nv.diaChi, nv.phongBan, nv.ngayBatDau, nv.luongCoBan, nv.trangThai, " +
+                "       nv.maLoaiNhanVien, lnv.tenLoaiNhanVien " +
+                "FROM NhanVien nv " +
+                "LEFT JOIN LoaiNhanVien lnv ON nv.maLoaiNhanVien = lnv.maLoaiNhanVien " +
+                "WHERE nv.maNhanVien = ?";
+        try (Connection con = Db.getConnection(ctx);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, maNhanVien);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                Employee e = new Employee();
+                e.setMaNhanVien(rs.getString("maNhanVien"));
+                e.setTenNhanVien(rs.getString("tenNhanVien"));
+                java.sql.Date ns = rs.getDate("ngaySinh");
+                e.setNgaySinh(ns != null ? ns.toLocalDate() : null);
+                e.setGioiTinh(rs.getString("gioiTinh"));
+                e.setCmnd(rs.getString("cmnd"));
+                java.sql.Date nc = rs.getDate("ngayCap");
+                e.setNgayCap(nc != null ? nc.toLocalDate() : null);
+                e.setNoiCap(rs.getString("noiCap"));
+                e.setSdt(rs.getString("sdt"));
+                e.setEmail(rs.getString("email"));
+                e.setDiaChi(rs.getString("diaChi"));
+                e.setPhongBan(rs.getString("phongBan"));
+                java.sql.Date nbd = rs.getDate("ngayBatDau");
+                e.setNgayBatDau(nbd != null ? nbd.toLocalDate() : null);
+                e.setLuongCoBan(rs.getString("luongCoBan"));
+                e.setTrangThai(rs.getString("trangThai"));
+                e.setMaLoaiNhanVien(rs.getString("maLoaiNhanVien"));
+                e.setTenLoaiNhanVien(rs.getString("tenLoaiNhanVien"));
+                return e;
+            }
+        }
+    }
+
     public String nextEmployeeId() throws Exception {
         String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(maNhanVien, 3, 4) AS INT)), 0) + 1 AS n FROM NhanVien";
         try (Connection con = Db.getConnection(ctx);

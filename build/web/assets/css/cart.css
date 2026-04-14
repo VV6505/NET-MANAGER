@@ -617,3 +617,37 @@ body {
     box-shadow: 0 0 0 2px #e74c3c;
 }
 
+.order-notice{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background: linear-gradient(135deg,#e8f8f0,#f2fff8);
+    border:1px solid #b7e4c7;
+    color:#1f6b3a;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:14px;
+    font-weight:600;
+}
+
+.order-notice i{
+    color:#179c5f;
+    font-size:18px;
+}
+
+.checkout-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.checkout-btn-secondary{
+    background:#6c757d !important;
+    box-shadow:none;
+}
+
+.checkout-btn-secondary:hover{
+    background:#5a6268 !important;
+    box-shadow:none;
+}
+

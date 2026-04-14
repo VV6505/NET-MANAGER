@@ -34,7 +34,6 @@ public class HistoryServlet extends BaseServlet {
             req.setAttribute("size", hp.pageSize);
             req.setAttribute("latestMaHoaDon", hp.latestMaHoaDon);
             req.setAttribute("latestFoods", hp.latestFoods);
-            req.setAttribute("latestGames", hp.latestGames);
         } catch (Exception e) {
             req.setAttribute("history", java.util.Collections.emptyList());
             req.setAttribute("error", "Lỗi DB: " + e.getMessage());

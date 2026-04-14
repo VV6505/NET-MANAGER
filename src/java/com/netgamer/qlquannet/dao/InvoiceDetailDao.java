@@ -23,11 +23,11 @@ public class InvoiceDetailDao {
         InvoiceDetail out = new InvoiceDetail();
 
         String sqlHd =
-                "SELECT h.maHoaDon, h.ngay, h.ngayDat, h.trangThai, h.tongTienDoAn, h.tongTienGame, h.tongTien, " +
+                "SELECT h.maHoaDon, h.ngay, h.ngayDat, h.trangThai, h.tongTienDoAn, COALESCE(h.tienMay, 0) AS tienMay, h.tongTien, " +
                 "       kh.maKhachHang, kh.tenKhachHang, kh.sdt, kh.email " +
                 "FROM HoaDon h " +
                 "JOIN KhachHang kh ON h.maKhachHang = kh.maKhachHang " +
-                "WHERE h.maHoaDon = ? AND h.maKhachHang = ? AND h.trangThai IN (N'Đã đặt', N'Đã thanh toán')";
+                "WHERE h.maHoaDon = ? AND h.maKhachHang = ? AND h.trangThai = N'Đã thanh toán'";
         try (Connection con = Db.getConnection(ctx);
              PreparedStatement ps = con.prepareStatement(sqlHd)) {
             ps.setString(1, maHoaDon);
@@ -42,13 +42,12 @@ public class InvoiceDetailDao {
                 out.sdt = rs.getString("sdt");
                 out.email = rs.getString("email");
                 out.tongTienDoAn = rs.getDouble("tongTienDoAn");
-                out.tongTienGame = rs.getDouble("tongTienGame");
+                out.tienMay = rs.getDouble("tienMay");
                 out.tongTien = rs.getDouble("tongTien");
             }
         }
 
         out.foods = new ArrayList<>();
-        out.games = new ArrayList<>();
 
         String sqlFood =
                 "SELECT da.tenDoAn, hdda.soLuong, hdda.donGia, hdda.thanhTien " +
@@ -72,28 +71,6 @@ public class InvoiceDetailDao {
             }
         }
 
-        String sqlGame =
-                "SELECT g.tenGame, hdg.soLuong, hdg.donGia, hdg.thanhTien " +
-                "FROM HoaDonGame hdg " +
-                "JOIN Game g ON hdg.maGame = g.maGame " +
-                "WHERE hdg.maHDGame = ? " +
-                "ORDER BY g.tenGame";
-        try (Connection con = Db.getConnection(ctx);
-             PreparedStatement ps = con.prepareStatement(sqlGame)) {
-            ps.setString(1, maHoaDon);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    InvoiceLineItem it = new InvoiceLineItem();
-                    it.setMaHoaDon(maHoaDon);
-                    it.setTen(rs.getString(1));
-                    it.setSoLuong(rs.getInt(2));
-                    it.setDonGia(rs.getDouble(3));
-                    it.setThanhTien(rs.getDouble(4));
-                    out.games.add(it);
-                }
-            }
-        }
-
         return out;
     }
 
@@ -105,10 +82,9 @@ public class InvoiceDetailDao {
         public String sdt;
         public String email;
         public double tongTienDoAn;
-        public double tongTienGame;
+        public double tienMay;
         public double tongTien;
         public List<InvoiceLineItem> foods;
-        public List<InvoiceLineItem> games;
     }
 }
 

@@ -19,11 +19,10 @@ public class HistoryDao {
     }
 
     public HistoryPage getUsageHistory(String maKhachHang, int pageNumber, int pageSize) throws Exception {
-        // Stored procedure trả 4 result sets:
+        // Stored procedure trả nhiều result sets:
         // (1) TotalRecords
         // (2) list usage + invoice
         // (3) food detail of latest
-        // (4) game detail of latest
         String sql = "EXEC sp_GetLichSuSuDungKhachHang ?, ?, ?";
         try (Connection con = Db.getConnection(ctx);
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -35,7 +34,6 @@ public class HistoryDao {
             int total = 0;
             List<UsageHistory> items = new ArrayList<>();
             List<InvoiceLineItem> latestFoods = new ArrayList<>();
-            List<InvoiceLineItem> latestGames = new ArrayList<>();
             String latestMaHoaDon = null;
 
             // RS1: total
@@ -60,7 +58,6 @@ public class HistoryDao {
                         u.setThoiGianRa(rs.getTimestamp("thoiGianRa"));
                         u.setMaHoaDon(rs.getString("maHoaDon"));
                         u.setTongTienDoAn(rs.getDouble("tongTienDoAn"));
-                        u.setTongTienGame(rs.getDouble("tongTienGame"));
                         u.setTongTien(rs.getDouble("tongTien"));
                         u.setTrangThai(rs.getString("trangThai"));
                         items.add(u);
@@ -86,25 +83,7 @@ public class HistoryDao {
                 }
             }
 
-            // RS4: game detail of latest
-            if (ps.getMoreResults()) {
-                try (ResultSet rs = ps.getResultSet()) {
-                    while (rs != null && rs.next()) {
-                        if (latestMaHoaDon == null) {
-                            latestMaHoaDon = rs.getString("maHoaDon");
-                        }
-                        InvoiceLineItem it = new InvoiceLineItem();
-                        it.setMaHoaDon(rs.getString("maHoaDon"));
-                        it.setTen(rs.getString("tenGame"));
-                        it.setSoLuong(rs.getInt("soLuong"));
-                        it.setDonGia(rs.getDouble("donGia"));
-                        it.setThanhTien(rs.getDouble("thanhTien"));
-                        latestGames.add(it);
-                    }
-                }
-            }
-
-            return new HistoryPage(total, items, pageNumber, pageSize, latestMaHoaDon, latestFoods, latestGames);
+            return new HistoryPage(total, items, pageNumber, pageSize, latestMaHoaDon, latestFoods);
         }
     }
 
@@ -115,7 +94,6 @@ public class HistoryDao {
         public final int pageSize;
         public final String latestMaHoaDon;
         public final List<InvoiceLineItem> latestFoods;
-        public final List<InvoiceLineItem> latestGames;
 
         public HistoryPage(
                 int totalRecords,
@@ -123,8 +101,7 @@ public class HistoryDao {
                 int pageNumber,
                 int pageSize,
                 String latestMaHoaDon,
-                List<InvoiceLineItem> latestFoods,
-                List<InvoiceLineItem> latestGames
+                List<InvoiceLineItem> latestFoods
         ) {
             this.totalRecords = totalRecords;
             this.items = items;
@@ -132,7 +109,6 @@ public class HistoryDao {
             this.pageSize = pageSize;
             this.latestMaHoaDon = latestMaHoaDon;
             this.latestFoods = latestFoods;
-            this.latestGames = latestGames;
         }
     }
 }

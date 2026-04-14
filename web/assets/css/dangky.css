@@ -178,6 +178,22 @@ body {
     font-style: normal;
     line-height: 1.45;
 }
+
+.auth-hint{
+    padding: 10px 12px;
+    background: #f5f8ff;
+    border: 1px solid #dbe7ff;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    color: #2b3f5f;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.input-container input::placeholder {
+    color: #b8c2cf;
+    opacity: 1;
+}
 .is-hidden{
     display: none;
 }

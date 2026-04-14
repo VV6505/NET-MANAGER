@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title>Hóa đơn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=20260413a">
 </head>
 <body>
     <jsp:include page="includes/header.jsp" />
@@ -45,6 +45,7 @@
                             <th>Khách hàng</th>
                             <th>Số giờ chơi</th>
                             <th>Tổng tiền</th>
+                            <th>Bill</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,6 +57,11 @@
                                 <td>${hd.tenKhachHang}</td>
                                 <td>${hd.soGioChoi}</td>
                                 <td>${hd.tongTien}</td>
+                                <td>
+                                    <a class="btn ghost" href="${pageContext.request.contextPath}/staff/invoices/export?maHoaDon=${hd.maHoaDon}">
+                                        Xuất bill
+                                    </a>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>

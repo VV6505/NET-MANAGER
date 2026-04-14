@@ -9,6 +9,7 @@ public class Customer {
     private double soDu;
     private String maLoaiKhachHang;
     private String tenLoaiKhachHang;
+    private String trangThaiTaiKhoan;
 
     public String getMaKhachHang() {
         return maKhachHang;
@@ -72,6 +73,14 @@ public class Customer {
 
     public void setTenLoaiKhachHang(String tenLoaiKhachHang) {
         this.tenLoaiKhachHang = tenLoaiKhachHang;
+    }
+
+    public String getTrangThaiTaiKhoan() {
+        return trangThaiTaiKhoan;
+    }
+
+    public void setTrangThaiTaiKhoan(String trangThaiTaiKhoan) {
+        this.trangThaiTaiKhoan = trangThaiTaiKhoan;
     }
 }
 

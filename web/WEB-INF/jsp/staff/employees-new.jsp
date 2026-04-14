@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title>Thêm nhân viên</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=20260413a">
 </head>
 <body>
 <jsp:include page="includes/header.jsp" />

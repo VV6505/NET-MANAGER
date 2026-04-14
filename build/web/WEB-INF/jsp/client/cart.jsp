@@ -52,6 +52,13 @@
             </script>
             <c:remove var="errorMessage" scope="session"/>
         </c:if>
+        <c:if test="${not empty sessionScope.orderNotice}">
+            <div class="order-notice">
+                <i class="fas fa-circle-check"></i>
+                <span>${sessionScope.orderNotice}</span>
+            </div>
+            <c:remove var="orderNotice" scope="session"/>
+        </c:if>
         
         <c:choose>
             <c:when test="${empty cartItems}">
@@ -80,8 +87,7 @@
                                  onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/img/placeholder?type=${item.type}';">
                             <div class="item-details">
                                 <h3 class="item-name">
-                                    <c:if test="${item.type == 'game'}">[Game] </c:if>
-                                    <c:if test="${item.type == 'food'}">[Food] </c:if>
+                                    [Dịch vụ] 
                                     ${item.name}
                                 </h3>
                                 <p class="item-price">
@@ -90,7 +96,6 @@
                             </div>
                             <form action="${pageContext.request.contextPath}/cart/update" method="POST" class="quantity-controls">
                                 <input type="hidden" name="itemId" value="${item.id}">
-                                <input type="hidden" name="itemType" value="${item.type}">
                                 <button type="submit" name="action" value="decrease" class="quantity-btn">
                                     <i class="fas fa-minus"></i>
                                 </button>
@@ -112,26 +117,24 @@
                     <span class="total-label">Đồ ăn:</span>
                     <span class="total-value"><fmt:formatNumber value="${totalFood}" type="number"/>đ</span>
                 </div>
-                <div class="total-amount" style="margin-top:8px; opacity:.85;">
-                    <span class="total-label">Game:</span>
-                    <span class="total-value"><fmt:formatNumber value="${totalGame}" type="number"/>đ</span>
-                </div>
                 <h3 class="summary-title">Tổng cộng</h3>
                 <div class="total-amount">
                     <span class="total-label">Thành tiền:</span>
                     <span class="total-value"><fmt:formatNumber value="${total}" type="number"/>đ</span>
                 </div>
                 <div class="checkout-actions">
-                    <a href="${pageContext.request.contextPath}/home" class="checkout-btn" style="background: #95a5a6;">
-                        Tiếp tục mua sắm
+                    <a href="${pageContext.request.contextPath}/home" class="checkout-btn checkout-btn-secondary">
+                        <i class="fas fa-plus"></i> Tiếp tục thêm món
                     </a>
                     <c:choose>
                         <c:when test="${not empty sessionScope.username}">
+                        <c:if test="${not sessionScope.orderConfirmed}">
                         <form action="${pageContext.request.contextPath}/cart/checkout" method="POST" style="margin-top: 10px;">
                             <button type="submit" class="checkout-btn">
                                 <i class="fas fa-credit-card"></i> Xác nhận đặt món
                             </button>
                         </form>
+                        </c:if>
                         </c:when>
                         <c:otherwise>
                         <a href="${pageContext.request.contextPath}/login?from=/cart" class="checkout-btn" style="margin-top: 10px;">

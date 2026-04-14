@@ -67,31 +67,6 @@
                         </div>
                     </c:if>
 
-                    <c:if test="${not empty latestGames}">
-                        <h4 class="history-section-title">Game</h4>
-                        <div class="history-table-wrap">
-                            <table class="history-table">
-                                <thead>
-                                <tr>
-                                    <th>Tên game</th>
-                                    <th class="col-num">Số lượng</th>
-                                    <th class="col-money">Đơn giá</th>
-                                    <th class="col-money">Thành tiền</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach var="it" items="${latestGames}">
-                                    <tr>
-                                        <td>${it.ten}</td>
-                                        <td class="col-num">${it.soLuong}</td>
-                                        <td class="col-money"><fmt:formatNumber value="${it.donGia}" type="number"/>đ</td>
-                                        <td class="col-money"><fmt:formatNumber value="${it.thanhTien}" type="number"/>đ</td>
-                                    </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:if>
                 </div>
             </c:if>
 

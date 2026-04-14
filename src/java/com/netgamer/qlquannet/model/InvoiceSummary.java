@@ -12,12 +12,7 @@ public class InvoiceSummary {
     private double tongTien;
     /** Tiền đồ ăn trên hóa đơn (cột HoaDon.tongTienDoAn) */
     private double tongTienDoAn;
-    /** Tiền game / dịch vụ game (cột HoaDon.tongTienGame) */
-    private double tongTienGame;
-    /**
-     * Tiền giờ chơi ước lượng: soGioChoi × giá giờ máy (từ bảng MayTinh qua LichSuSuDung).
-     * Phục vụ dashboard báo cáo; có thể = 0 nếu chưa gán máy hoặc giá giờ = 0.
-     */
+    /** Tiền thuê máy trên hóa đơn. */
     private double tienGioChoi;
 
     public String getMaHoaDon() {
@@ -84,14 +79,6 @@ public class InvoiceSummary {
         this.tongTienDoAn = tongTienDoAn;
     }
 
-    public double getTongTienGame() {
-        return tongTienGame;
-    }
-
-    public void setTongTienGame(double tongTienGame) {
-        this.tongTienGame = tongTienGame;
-    }
-
     public double getTienGioChoi() {
         return tienGioChoi;
     }
@@ -100,9 +87,9 @@ public class InvoiceSummary {
         this.tienGioChoi = tienGioChoi;
     }
 
-    /** Tổng một dòng báo cáo: tiền trong hóa đơn + tiền giờ (nếu tính được). */
+    /** Tổng một dòng báo cáo (đã gồm tiền máy + đồ ăn). */
     public double getTongCong() {
-        return tongTien + tienGioChoi;
+        return tongTien;
     }
 }
 

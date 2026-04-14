@@ -59,15 +59,8 @@
               <input type="text" id="username" name="username" placeholder="0123456789" pattern="[0-9]{10}" title="Số điện thoại phải có đúng 10 chữ số" required>
             </div>
           </div>
-          <div class="form-group">
-            <div class="label-container">
-              <i class="fa fa-key"></i>
-              <label for="password">Mật khẩu</label>
-            </div>
-            <div class="input-container">
-              <input type="password" class="password-field" name="password" placeholder="**********" required>
-              <i class="fa fa-eye toggle-password"></i>
-            </div>
+          <div class="auth-hint">
+            Sau khi đăng ký, bạn cần chờ admin xác nhận. Tên đăng nhập là <b>SĐT</b>, mật khẩu mặc định là <b>tên khách hàng đã chuẩn hóa</b> (không dấu, không khoảng trắng, chữ thường).
           </div>
           <button class="btn" type="submit">Đăng Ký</button>
         </form>

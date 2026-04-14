@@ -1,12 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Nhân viên</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=20260413a">
 </head>
 <body>
 <jsp:include page="includes/header.jsp" />
@@ -15,9 +16,13 @@
     <section class="card">
         <div class="hd">
             <h2>Quản lý nhân viên</h2>
+            <c:set var="roleLower" value="${fn:toLowerCase(sessionScope.staffRole)}" />
+            <c:set var="canAddEmployee" value="${fn:contains(roleLower, 'quản lý') or fn:contains(roleLower, 'admin')}" />
             <div style="display:flex;gap:10px;align-items:center;">
                 <span class="chip">Tổng: <c:out value="${employees.size()}"/></span>
-                <a class="btn" href="${pageContext.request.contextPath}/staff/employees/new">Thêm nhân viên</a>
+                <c:if test="${canAddEmployee}">
+                    <a class="btn" href="${pageContext.request.contextPath}/staff/employees/new">Thêm nhân viên</a>
+                </c:if>
             </div>
         </div>
         <div class="bd">

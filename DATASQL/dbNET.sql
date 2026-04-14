@@ -97,12 +97,14 @@ CREATE TABLE KhachHang (
     sdt VARCHAR(10),
     email VARCHAR(50) UNIQUE,
     matKhau VARCHAR(20),
+    trangThaiTaiKhoan NVARCHAR(20) NOT NULL DEFAULT N'Đang hoạt động',
     soGioChoi DECIMAL(10,2),
     soDu DECIMAL(10,2),
     maLoaiKhachHang CHAR(6),
 	CONSTRAINT CK_SDT_KH CHECK (SDT LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
 	CONSTRAINT UQ_SDT_KH UNIQUE (SDT),
 	CONSTRAINT CK_EMAIL_KH CHECK (Email LIKE '%_@__%.__%'),
+    CONSTRAINT CK_TrangThaiTaiKhoan_KH CHECK (trangThaiTaiKhoan IN (N'Chờ xác nhận', N'Đang hoạt động', N'Đã khóa')),
     CONSTRAINT FK_maLKH_KH FOREIGN KEY (maLoaiKhachHang) REFERENCES LoaiKhachHang(maLoaiKhachHang) ON UPDATE CASCADE ON DELETE CASCADE
 );
 GO
@@ -156,7 +158,7 @@ GO
 -- Bảng DichVu
 CREATE TABLE DichVu (
     maDichVu CHAR(6),
-    tenDichVu NVARCHAR(50)
+    tenDichVu NVARCHAR(50),
     CONSTRAINT PK_DichVu PRIMARY KEY (maDichVu)
 );
 GO
@@ -165,7 +167,7 @@ GO
 CREATE TABLE TheLoaiGame (
     maTheLoai CHAR(6),
     tenTheLoai NVARCHAR(30),
-    moTa NVARCHAR(100)
+    moTa NVARCHAR(100),
     CONSTRAINT PK_TheLoaiGame PRIMARY KEY (maTheLoai)
 );
 GO
@@ -311,11 +313,11 @@ INSERT INTO LoaiKhachHang (maLoaiKhachHang, tenLoaiKhachHang, moTa) VALUES
 
 -- Bảng KhachHang (maKhachHang, tenKhachHang, sdt, email, matKhau, soGioChoi, soDu, maLoaiKhachHang)
 INSERT INTO KhachHang (maKhachHang, tenKhachHang, sdt, email, matKhau, soGioChoi, soDu, maLoaiKhachHang) VALUES 
-('KH0001', N'Phạm Văn C', '0123456789', 'phamc@example.com', 'abc123', 0, 100000, 'LK0001'),
-('KH0002', N'Lê Thị D', '0987654321', 'led@example.com', 'xyz789', 0, 200000, 'LK0001'),
-('KH0003', N'Lê Minh Tuấn', '0912345673', 'leminhtuan3@example.com', 'tuan789', 0.00, 200000.00, 'LK0001'),
+('KH0001', N'Phạm Văn C', '0123456789', 'phamc@example.com', 'abc123', 2.5, 100000, 'LK0001'),
+('KH0002', N'Lê Thị D', '0987654321', 'led@example.com', 'xyz789', 2.0, 200000, 'LK0001'),
+('KH0003', N'Lê Minh Tuấn', '0912345673', 'leminhtuan3@example.com', 'tuan789', 1.30, 200000.00, 'LK0001'),
 -- 1 khách hàng VIP (LK0002)
-('KH0004', N'Trần Quốc Bảo', '0912345686', 'tranquocbao16@example.com', 'bao123', 0.00, 500000.00, 'LK0002')
+('KH0004', N'Trần Quốc Bảo', '0912345686', 'tranquocbao16@example.com', 'bao123', 3.5, 500000.00, 'LK0002')
 
 GO
 
@@ -425,31 +427,6 @@ INSERT INTO DoAn (maDoAn, tenDoAn, giaDoAn, maLoaiDoAn, maDichVu) VALUES
 ('DA0009', N'Nước Ép Cam', 20000, 'LDA002', 'DV0002'),
 ('DA0010', N'Phở Bò', 45000, 'LDA003', 'DV0002');
 
-INSERT INTO LichSuSuDung (maSuDung, maKhachHang, maMay, thoiGianVao, thoiGianRa) VALUES
--- KH0001 (10 lần, sử dụng máy Bình Thường và Trung Cấp ở Tầng 1)
-('LS0001', 'KH0001', 'MT0001', '2025-05-01 08:00:00', '2025-05-01 10:30:00'), -- 2.5 giờ
-('LS0002', 'KH0001', 'MT0002', '2025-05-03 13:00:00', '2025-05-03 15:45:00'), -- 2.75 giờ
-('LS0003', 'KH0001', 'MT0003', '2025-05-05 18:00:00', '2025-05-05 20:15:00') -- 2.25 giờ
-
-INSERT INTO HoaDon (maHoaDon, maNhanVien, maKhachHang, maSuDung, ngay, ngayDat, soGioChoi) VALUES
--- KH0001 (10 lịch sử sử dụng, 15 hóa đơn)
-('HD0001', 'NV0001', 'KH0001', 'LS0001', '2025-05-01', '2025-05-01', 2), -- 2.5 giờ làm tròn
-('HD0002', 'NV0002', 'KH0001', 'LS0002', '2025-05-03', '2025-05-03', 3), -- 2.75 giờ làm tròn
-('HD0003', 'NV0003', 'KH0001', 'LS0002', '2025-05-03', '2025-05-03', 0) -- Hóa đơn chỉ có đồ ăn/game
-
-INSERT INTO HoaDonGame (maHDGame, maGame, soLuong, donGia, thanhTien) VALUES
--- KH0001 (15 hóa đơn)
-('HD0001', 'G00001', 1, 0, 0), -- Liên Minh
-('HD0001', 'G00002', 2, 0, 0), -- CS:GO
-('HD0002', 'G00003', 1, 0, 0), -- Valorant
-('HD0003', 'G00004', 1, 0, 0) -- FIFA Online 4
-
-INSERT INTO HoaDonDoAn (maHDDoAn, maDoAn, soLuong, donGia, thanhTien) VALUES
--- KH0001 (15 hóa đơn)
-('HD0001', 'DA0001', 1, 89000, 89000), -- Pizza Hải Sản
-('HD0003', 'DA0003', 2, 45000, 90000), -- Hamburger Gà
-('HD0002', 'DA0002', 1, 15000, 15000) -- Coca Cola
-
 -- Cập nhật đường dẫn hình ảnh cho Game
 UPDATE Game SET hinhAnh = 'assets/images/games/lmht.jpg' WHERE tenGame = N'Liên Minh';
 UPDATE Game SET hinhAnh = 'assets/images/games/csgo.jpg' WHERE tenGame = N'CS:GO';
@@ -474,6 +451,18 @@ UPDATE DoAn SET hinhAnh = 'assets/images/foods/food7.jpg' WHERE maDoAn = 'DA0007
 UPDATE DoAn SET hinhAnh = 'assets/images/foods/food8.jpg' WHERE maDoAn = 'DA0008';
 UPDATE DoAn SET hinhAnh = 'assets/images/foods/food9.jpg' WHERE maDoAn = 'DA0009';
 UPDATE DoAn SET hinhAnh = 'assets/images/foods/food10.jpg' WHERE maDoAn = 'DA0010';
+GO
+
+IF COL_LENGTH('HoaDon', 'tienMay') IS NULL
+BEGIN
+    ALTER TABLE HoaDon ADD tienMay DECIMAL(10,2) NOT NULL CONSTRAINT DF_HoaDon_tienMay DEFAULT 0;
+END
+GO
+
+IF COL_LENGTH('KhachHang', 'trangThaiTaiKhoan') IS NULL
+BEGIN
+    ALTER TABLE KhachHang ADD trangThaiTaiKhoan NVARCHAR(20) NOT NULL CONSTRAINT DF_KhachHang_TrangThaiTaiKhoan DEFAULT N'Đang hoạt động';
+END
 GO
 
 -- Cập nhật stored procedure để lấy thêm hinhAnh
@@ -582,23 +571,15 @@ BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         DECLARE @maHoaDon CHAR(6)
-        DECLARE @maNhanVien CHAR(6)
-
-        -- Kiểm tra hoặc tạo hóa đơn tạm cho khách hàng
+        -- Kiểm tra hóa đơn phiên thuê đang mở của khách hàng
         SELECT @maHoaDon = maHoaDon 
         FROM HoaDon 
-        WHERE maKhachHang = @maKhachHang AND trangThai = N'Tạm'
+        WHERE maKhachHang = @maKhachHang AND trangThai IN (N'Tạm', N'Đã đặt')
 
         IF @maHoaDon IS NULL
         BEGIN
-            -- Tạo mã hóa đơn mới
-            SELECT @maHoaDon = 'HD' + RIGHT('0000' + 
-                CAST(ISNULL(MAX(CAST(SUBSTRING(maHoaDon, 3, 4) AS INT)), 0) + 1 AS VARCHAR(4)), 4)
-            FROM HoaDon
-
-            -- Tạo hóa đơn mới
-            INSERT INTO HoaDon (maHoaDon, maKhachHang, ngay, ngayDat, trangThai)
-            VALUES (@maHoaDon, @maKhachHang, GETDATE(), GETDATE(), N'Tạm')
+            SELECT N'Error: Khách hàng chưa có phiên thuê máy đang mở' AS Result
+            RETURN
         END
 
         IF @loai = 'food'
@@ -624,36 +605,12 @@ BEGIN
                 WHERE maHDDoAn = @maHoaDon AND maDoAn = @maItem
             END
         END
-        ELSE IF @loai = 'game'
-        BEGIN
-            IF @soLuong > 0
-            BEGIN
-                MERGE HoaDonGame AS target
-                USING (SELECT @maHoaDon AS maHDGame, @maItem AS maGame, @soLuong AS soLuong,
-                              giaGame AS donGia, @soLuong * giaGame AS thanhTien
-                       FROM Game WHERE maGame = @maItem) AS source
-                ON (target.maHDGame = source.maHDGame AND target.maGame = source.maGame)
-                WHEN MATCHED THEN
-                    UPDATE SET soLuong = source.soLuong,
-                               thanhTien = source.thanhTien
-                WHEN NOT MATCHED THEN
-                    INSERT (maHDGame, maGame, soLuong, donGia, thanhTien)
-                    VALUES (source.maHDGame, source.maGame, source.soLuong,
-                           source.donGia, source.thanhTien);
-            END
-            ELSE
-            BEGIN
-                DELETE FROM HoaDonGame
-                WHERE maHDGame = @maHoaDon AND maGame = @maItem
-            END
-        END
 
-        -- Cập nhật tổng tiền và thông tin trong HoaDon
+        -- Cập nhật tổng tiền hóa đơn theo tiền đồ ăn + tiền máy đã có
         UPDATE HoaDon
         SET tongTienDoAn = ISNULL((SELECT SUM(thanhTien) FROM HoaDonDoAn WHERE maHDDoAn = @maHoaDon), 0),
-            tongTienGame = ISNULL((SELECT SUM(thanhTien) FROM HoaDonGame WHERE maHDGame = @maHoaDon), 0),
-            tongTien = ISNULL((SELECT SUM(thanhTien) FROM HoaDonDoAn WHERE maHDDoAn = @maHoaDon), 0) +
-                      ISNULL((SELECT SUM(thanhTien) FROM HoaDonGame WHERE maHDGame = @maHoaDon), 0),
+            tongTienGame = 0,
+            tongTien = ISNULL((SELECT SUM(thanhTien) FROM HoaDonDoAn WHERE maHDDoAn = @maHoaDon), 0) + ISNULL(tienMay, 0),
             ngay = GETDATE()
         WHERE maHoaDon = @maHoaDon
 
@@ -1244,6 +1201,136 @@ BEGIN
         WHERE maKhachHang = @maKhachHang 
         ORDER BY thoiGianVao DESC
     );
+END
+GO
+
+DROP PROCEDURE IF EXISTS sp_BatDauThueMay;
+GO
+CREATE PROCEDURE sp_BatDauThueMay
+    @maMay CHAR(6),
+    @maKhachHang CHAR(6),
+    @maNhanVien CHAR(6) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+            IF NOT EXISTS (SELECT 1 FROM MayTinh WHERE maMay = @maMay)
+            BEGIN
+                SELECT N'Error: Máy không tồn tại' AS Result;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            IF EXISTS (SELECT 1 FROM MayTinh WHERE maMay = @maMay AND trangThai IN (N'Đang thuê', N'Đang hư'))
+            BEGIN
+                SELECT N'Error: Máy không sẵn sàng để thuê' AS Result;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            IF NOT EXISTS (SELECT 1 FROM KhachHang WHERE maKhachHang = @maKhachHang AND trangThaiTaiKhoan = N'Đang hoạt động')
+            BEGIN
+                SELECT N'Error: Tài khoản khách hàng chưa được xác nhận hoặc đã khóa' AS Result;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            DECLARE @maSuDung CHAR(6), @maHoaDon CHAR(6);
+            SELECT @maSuDung = 'LS' + RIGHT('0000' + CAST(ISNULL(MAX(CAST(SUBSTRING(maSuDung, 3, 4) AS INT)), 0) + 1 AS VARCHAR(4)), 4)
+            FROM LichSuSuDung;
+            SELECT @maHoaDon = 'HD' + RIGHT('0000' + CAST(ISNULL(MAX(CAST(SUBSTRING(maHoaDon, 3, 4) AS INT)), 0) + 1 AS VARCHAR(4)), 4)
+            FROM HoaDon;
+
+            INSERT INTO LichSuSuDung (maSuDung, maKhachHang, maMay, thoiGianVao)
+            VALUES (@maSuDung, @maKhachHang, @maMay, GETDATE());
+
+            INSERT INTO HoaDon (maHoaDon, maNhanVien, maKhachHang, maSuDung, ngay, ngayDat, soGioChoi, tongTienDoAn, tongTienGame, tienMay, tongTien, trangThai)
+            VALUES (@maHoaDon, @maNhanVien, @maKhachHang, @maSuDung, CAST(GETDATE() AS DATE), GETDATE(), 0, 0, 0, 0, 0, N'Đã đặt');
+
+            UPDATE MayTinh
+            SET trangThai = N'Đang thuê',
+                maKhachHang = @maKhachHang
+            WHERE maMay = @maMay;
+        COMMIT TRANSACTION;
+        SELECT N'Success' AS Result, @maHoaDon AS MaHoaDon, @maSuDung AS MaSuDung;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SELECT N'Error: ' + ERROR_MESSAGE() AS Result;
+    END CATCH
+END
+GO
+
+DROP PROCEDURE IF EXISTS sp_KetThucThueMay;
+GO
+CREATE PROCEDURE sp_KetThucThueMay
+    @maMay CHAR(6),
+    @maNhanVien CHAR(6) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+            DECLARE @maSuDung CHAR(6), @maHoaDon CHAR(6), @giaGio DECIMAL(10,2);
+            SELECT TOP 1
+                @maSuDung = l.maSuDung,
+                @maHoaDon = h.maHoaDon,
+                @giaGio = m.giaGio
+            FROM LichSuSuDung l
+            JOIN MayTinh m ON l.maMay = m.maMay
+            LEFT JOIN HoaDon h ON h.maSuDung = l.maSuDung
+            WHERE l.maMay = @maMay AND l.thoiGianRa IS NULL
+            ORDER BY l.thoiGianVao DESC;
+
+            IF @maSuDung IS NULL OR @maHoaDon IS NULL
+            BEGIN
+                SELECT N'Error: Không tìm thấy phiên thuê đang mở của máy' AS Result;
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
+            UPDATE LichSuSuDung
+            SET thoiGianRa = GETDATE()
+            WHERE maSuDung = @maSuDung;
+
+            DECLARE @soPhut INT, @soGioLamTron INT, @tienMay DECIMAL(10,2), @tongDoAn DECIMAL(10,2);
+            SELECT @soPhut = DATEDIFF(MINUTE, thoiGianVao, thoiGianRa)
+            FROM LichSuSuDung
+            WHERE maSuDung = @maSuDung;
+
+            SET @soPhut = CASE WHEN @soPhut IS NULL OR @soPhut < 1 THEN 1 ELSE @soPhut END;
+            SET @soGioLamTron = CEILING(@soPhut / 60.0);
+            SET @tienMay = (@soPhut / 60.0) * ISNULL(@giaGio, 0);
+            SET @tongDoAn = ISNULL((SELECT SUM(thanhTien) FROM HoaDonDoAn WHERE maHDDoAn = @maHoaDon), 0);
+
+            UPDATE HoaDon
+            SET maNhanVien = COALESCE(@maNhanVien, maNhanVien),
+                ngay = CAST(GETDATE() AS DATE),
+                soGioChoi = @soGioLamTron,
+                tongTienDoAn = @tongDoAn,
+                tongTienGame = 0,
+                tienMay = @tienMay,
+                tongTien = @tongDoAn + @tienMay,
+                trangThai = N'Đã thanh toán'
+            WHERE maHoaDon = @maHoaDon;
+
+            UPDATE MayTinh
+            SET trangThai = N'Còn trống',
+                maKhachHang = NULL
+            WHERE maMay = @maMay;
+
+            UPDATE KhachHang
+            SET trangThaiTaiKhoan = N'Đã khóa',
+                matKhau = NULL
+            WHERE maKhachHang = (SELECT maKhachHang FROM LichSuSuDung WHERE maSuDung = @maSuDung);
+        COMMIT TRANSACTION;
+        SELECT N'Success' AS Result, @maHoaDon AS MaHoaDon;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SELECT N'Error: ' + ERROR_MESSAGE() AS Result;
+    END CATCH
 END
 GO
 
